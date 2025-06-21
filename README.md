@@ -1,4 +1,4 @@
-# blogsymfony# 📝 Blog Personnel – Projet Symfony
+#  Blog Personnel – Projet Symfony
 
 Ce projet est un **blog personnel** développé avec **Symfony 7**, réalisé dans le cadre d’un devoir universitaire. Il permet aux utilisateurs de publier des articles, de commenter et de gérer le contenu via un système de rôles bien défini.
 
