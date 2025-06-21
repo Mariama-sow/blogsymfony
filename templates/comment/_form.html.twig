@@ -1,0 +1,6 @@
+{# templates/comment/_form.html.twig #}
+
+{{ form_start(form) }}
+    {{ form_widget(form.content, {'attr': {'rows': 3, 'class': 'form-control mb-2'}}) }}
+    <button class="btn btn-primary">Publier</button>
+{{ form_end(form) }}

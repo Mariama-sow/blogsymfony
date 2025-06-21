@@ -1,0 +1,672 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Articles publiés{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-header">
+                <h2 class="search-title">
+                    <i class="fas fa-search"></i>
+                    Rechercher des articles
+                </h2>
+                <p class="search-subtitle">Filtrez par titre, catégorie ou tags</p>
+            </div>
+            
+            <div class="search-form-container">
+                {{ form_start(searchForm, {'attr': {'class': 'search-form'}}) }}
+                    <div class="search-grid">
+                        <div class="search-field">
+                            <div class="field-icon">
+                                <i class="fas fa-pen"></i>
+                            </div>
+                            {{ form_widget(searchForm.query, {
+                                'attr': {
+                                    'class': 'form-control search-input',
+                                    'placeholder': 'Rechercher par titre...'
+                                }
+                            }) }}
+                        </div>
+                        
+                        <div class="search-field">
+                            <div class="field-icon">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            {{ form_widget(searchForm.category, {
+                                'attr': {
+                                    'class': 'form-control search-select'
+                                }
+                            }) }}
+                        </div>
+                        
+                        <div class="search-field tags-field">
+                            <div class="field-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <div id="tags-container" data-prototype="{{ form_widget(searchForm.tags.vars.prototype)|e('html_attr') }}">
+                                {% for tag in searchForm.tags %}
+                                    <div class="tag-input">
+                                        {{ form_widget(tag, {'attr': {'class': 'form-control tag-field', 'placeholder': 'Tag...'}}) }}
+                                        <button type="button" class="remove-tag">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="add-tag-btn">
+                                <i class="fas fa-plus"></i>
+                                Ajouter un tag
+                            </button>
+                        </div>
+                        
+                        <div class="search-actions">
+                            <button type="submit" class="btn btn-search">
+                                <i class="fas fa-search"></i>
+                                <span>Rechercher</span>
+                            </button>
+                            <a href="{{ path('app_article_index') }}" class="btn btn-reset">
+                                <i class="fas fa-undo"></i>
+                                <span>Réinitialiser</span>
+                            </a>
+                        </div>
+                    </div>
+                {{ form_end(searchForm) }}
+            </div>
+        </div>
+
+        <!-- Articles Section -->
+        <div class="articles-section">
+            <div class="section-header">
+                <h1 class="section-title">
+                    <span class="gradient-text">Articles publiés</span>
+                    <div class="articles-count">{{ articles|length }} articles trouvés</div>
+                </h1>
+            </div>
+
+            <div class="articles-list">
+                {% for article in articles %}
+                    <article class="article-item" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                        <div class="article-content-wrapper">
+                            {% if article.image %}
+                                <div class="article-thumbnail">
+                                    <img src="{{ asset('uploads/' ~ article.image) }}" alt="{{ article.title }}">
+                                    <div class="thumbnail-overlay">
+                                        <i class="fas fa-eye"></i>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="article-thumbnail no-image">
+                                    <div class="placeholder-content">
+                                        <i class="fas fa-newspaper"></i>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="article-details">
+                                <div class="article-meta">
+                                    <span class="publish-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        {{ article.createdAt|date('d/m/Y') }}
+                                    </span>
+                                    <span class="author-name">
+                                        <i class="fas fa-user"></i>
+                                        {% if article.auteur %}
+                                            {{ article.auteur.email|split('@')|first }}
+                                        {% else %}
+                                            Auteur inconnu
+                                        {% endif %}
+                                    </span>
+                                    {% if article.category %}
+                                        <span class="category-tag">
+                                            <i class="fas fa-tag"></i>
+                                            {{ article.category.name }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <h2 class="article-title">
+                                    <a href="{{ path('app_article_show', {'id': article.id}) }}">
+                                        {{ article.title }}
+                                    </a>
+                                </h2>
+
+                                <p class="article-excerpt">
+                                    {{ article.content|striptags|u.truncate(200, '...') }}
+                                </p>
+
+                                <div class="article-actions">
+                                    <a href="{{ path('app_article_show', {'id': article.id}) }}" class="btn btn-read">
+                                        <span>Lire la suite</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                    <div class="article-stats">
+                                        <span class="reading-time">
+                                            <i class="fas fa-clock"></i>
+                                            {{ (article.content|length / 200)|round }} min
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="no-results">
+                        <div class="no-results-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Aucun article trouvé</h3>
+                        <p>Essayez de modifier vos critères de recherche</p>
+                        <a href="{{ path('app_article_index') }}" class="btn btn-primary">
+                            <i class="fas fa-undo"></i>
+                            Voir tous les articles
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .container {
+            max-width: 1000px;
+        }
+
+        /* Search Section */
+        .search-section {
+            margin-bottom: 50px;
+        }
+
+        .search-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .search-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .search-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+        }
+
+        .search-form-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: end;
+        }
+
+        .search-field {
+            position: relative;
+        }
+
+        .field-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 2;
+        }
+
+        .search-input,
+        .search-select {
+            padding-left: 45px !important;
+        }
+
+        .tags-field {
+            grid-column: 1 / -1;
+        }
+
+        .tag-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tag-field {
+            flex: 1;
+            padding-left: 45px !important;
+        }
+
+        .remove-tag {
+            background: rgba(255, 107, 107, 0.2);
+            border: none;
+            color: #ff6b6b;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-tag:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.1);
+        }
+
+        .add-tag-btn {
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .add-tag-btn:hover {
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+            transform: translateY(-2px);
+        }
+
+        .search-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-search {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .btn-reset {
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Articles Section */
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .articles-count {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        /* Articles List */
+        .articles-list {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .article-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .article-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .article-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .article-content-wrapper {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .article-thumbnail {
+            width: 150px;
+            height: 100px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .article-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .article-item:hover .article-thumbnail img {
+            transform: scale(1.1);
+        }
+
+        .article-thumbnail.no-image {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-content {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .article-item:hover .thumbnail-overlay {
+            opacity: 1;
+        }
+
+        .article-details {
+            flex: 1;
+        }
+
+        .article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .category-tag {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white !important;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .article-title {
+            margin-bottom: 12px;
+        }
+
+        .article-title a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+
+        .article-title a:hover {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-excerpt {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .article-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn-read {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-read::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-read:hover::before {
+            left: 100%;
+        }
+
+        .btn-read:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .article-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .reading-time {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .no-results h3 {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .no-results p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 25px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .search-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .article-content-wrapper {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .article-thumbnail {
+                width: 100%;
+                height: 200px;
+                justify-self: center;
+            }
+
+            .article-meta {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .article-actions {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-form-container {
+                padding: 20px;
+            }
+
+            .article-item {
+                padding: 20px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .search-title {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addTagBtn = document.querySelector('.add-tag-btn');
+            const tagsContainer = document.getElementById('tags-container');
+            
+            if (addTagBtn && tagsContainer) {
+                addTagBtn.addEventListener('click', function() {
+                    const prototype = tagsContainer.dataset.prototype;
+                    const index = tagsContainer.querySelectorAll('.tag-input').length;
+                    const newWidget = prototype.replace(/__name__/g, index);
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'tag-input';
+                    wrapper.innerHTML = newWidget + '<button type="button" class="remove-tag"><i class="fas fa-times"></i></button>';
+                    
+                    const input = wrapper.querySelector('input');
+                    input.className = 'form-control tag-field';
+                    input.placeholder = 'Tag...';
+                    
+                    tagsContainer.appendChild(wrapper);
+                    
+                    // Add remove functionality to new button
+                    const removeBtn = wrapper.querySelector('.remove-tag');
+                    removeBtn.addEventListener('click', function() {
+                        wrapper.remove();
+                    });
+                    
+                    // Focus on new input
+                    input.focus();
+                });
+            }
+            
+            // Add remove functionality to existing remove buttons
+            document.querySelectorAll('.remove-tag').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.tag-input').remove();
+                });
+            });
+            
+            // Smooth animations for form interactions
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                });
+                
+                control.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ (edit_mode) ? 'Modifier' : 'Créer' }} un Article{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title gradient-text">
+            <i class="fas fa-{{ (edit_mode) ? 'edit' : 'plus' }}"></i>
+            {{ (edit_mode) ? 'Modifier l\'article' : 'Créer un nouvel article' }}
+        </h1>
+        <p class="page-subtitle">
+            {{ (edit_mode) ? 'Apportez les modifications nécessaires' : 'Rédigez votre nouvel article' }}
+        </p>
+    </div>
+
+    <div class="form-card card-glass">
+        {{ include('article/_form.html.twig') }}
+    </div>
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.page-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-card {
+    padding: 40px;
+    margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 15px;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .form-card {
+        padding: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.8rem;
+    }
+    
+    .form-card {
+        padding: 20px;
+    }
+}
+</style>
+{% endblock %}

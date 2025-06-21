@@ -1,0 +1,54 @@
+<div class="delete-form-container">
+    <form method="post" action="{{ path('app_article_delete', {'id': article.id}) }}" class="delete-form" id="deleteArticleForm">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.id) }}">
+        <button type="button" class="btn btn-danger delete-btn" onclick="confirmArticleDelete()">
+            <i class="fas fa-trash-alt"></i>
+            Supprimer l'article
+        </button>
+    </form>
+</div>
+
+<style>
+.delete-form-container {
+    margin-top: 15px;
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #dc3545, #ff6b6b);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(45deg, #c82333, #ff5252);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
+}
+</style>
+
+<script>
+function confirmArticleDelete() {
+    Swal.fire({
+        title: 'Confirmer la suppression',
+        html: `Êtes-vous sûr de vouloir supprimer cet article ?<br><b>Cette action est irréversible.</b>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, supprimer',
+        cancelButtonText: 'Annuler',
+        backdrop: 'rgba(0,0,0,0.8)'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('deleteArticleForm').submit();
+        }
+    });
+}
+</script>

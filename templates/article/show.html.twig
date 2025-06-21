@@ -1,0 +1,908 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <!-- Article Header -->
+        <div class="article-header">
+            <div class="breadcrumb-nav">
+                <a href="{{ path('home') }}" class="breadcrumb-link">
+                    <i class="fas fa-home"></i>
+                    Accueil
+                </a>
+                <span class="breadcrumb-separator">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <a href="{{ path('app_article_index') }}" class="breadcrumb-link">
+                    Articles
+                </a>
+                <span class="breadcrumb-separator">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <span class="breadcrumb-current">{{ article.title|u.truncate(50) }}</span>
+            </div>
+            
+            <div class="article-meta">
+                <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>{{ article.createdAt|date('d/m/Y H:i') }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>
+                        {% if article.auteur %}
+                            {{ article.auteur.email|split('@')|first }}
+                        {% else %}
+                            Auteur inconnu
+                        {% endif %}
+                    </span>
+                </div>
+                {% if article.category %}
+                    <div class="meta-item category-meta">
+                        <i class="fas fa-tag"></i>
+                        <span>{{ article.category.name }}</span>
+                    </div>
+                {% endif %}
+                <div class="meta-item reading-time">
+                    <i class="fas fa-clock"></i>
+                    <span>{{ (article.content|length / 200)|round }} min de lecture</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article Content -->
+        <article class="article-content">
+            <header class="article-title-section">
+                <h1 class="article-title">{{ article.title }}</h1>
+                {% if article.image %}
+                    <div class="article-featured-image">
+                        <img src="{{ asset('uploads/' ~ article.image) }}" alt="{{ article.title }}">
+                        <div class="image-gradient-overlay"></div>
+                    </div>
+                {% endif %}
+            </header>
+
+            <div class="article-body">
+                <div class="content-wrapper">
+                    {{ article.content|nl2br }}
+                </div>
+            </div>
+        </article>
+
+        <!-- Social Share -->
+        <div class="social-share">
+            <h3 class="share-title">
+                <i class="fas fa-share-alt"></i>
+                Partager cet article
+            </h3>
+            <div class="share-buttons">
+                <a href="#" class="share-btn twitter" onclick="shareOnTwitter('{{ article.title }}', '{{ url('app_article_show', {id: article.id}) }}')">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="#" class="share-btn facebook" onclick="shareOnFacebook('{{ url('app_article_show', {id: article.id}) }}')">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Facebook</span>
+                </a>
+                <a href="#" class="share-btn linkedin" onclick="shareOnLinkedIn('{{ article.title }}', '{{ url('app_article_show', {id: article.id}) }}')">
+                    <i class="fab fa-linkedin-in"></i>
+                    <span>LinkedIn</span>
+                </a>
+                <button class="share-btn copy" onclick="copyToClipboard('{{ url('app_article_show', {id: article.id}) }}')">
+                    <i class="fas fa-link"></i>
+                    <span>Copier le lien</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <section class="comments-section">
+            <div class="comments-header">
+                <h2 class="comments-title">
+                    <i class="fas fa-comments"></i>
+                    Commentaires
+                    <span class="comments-count">({{ comments|length }})</span>
+                </h2>
+            </div>
+
+            {% if comments is empty %}
+                <div class="no-comments">
+                    <div class="no-comments-icon">
+                        <i class="fas fa-comment-slash"></i>
+                    </div>
+                    <h3>Aucun commentaire pour le moment</h3>
+                    <p>Soyez le premier à partager votre opinion !</p>
+                </div>
+            {% else %}
+                <div class="comments-list">
+                {% for comment in comments %}
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            <div class="avatar-circle">
+                                {{ comment.user ? comment.user.email|first|upper : 'A' }}
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <div class="comment-author">
+                                    {{ comment.user ? comment.user.email|split('@')|first : 'Anonyme' }}
+                                </div>
+                                <div class="comment-date">
+                                    <i class="fas fa-clock"></i>
+                                    {{ comment.createdAt|date('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                            <div class="comment-text">
+                                {{ comment.content|nl2br }}
+                            </div>
+                            {% if is_granted('ROLE_ADMIN') or (comment.user and comment.user == app.user) %}
+                                <div class="comment-actions">
+                                    <form method="post" action="{{ path('app_comment_delete', {'id': comment.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+                                        <button type="submit" class="btn-delete" onclick="return confirm('Confirmer la suppression ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Add Comment Form -->
+            <div class="add-comment-section">
+                {% if is_granted('ROLE_USER') %}
+                    <div class="comment-form-container">
+                        <h3 class="form-title">
+                            <i class="fas fa-pen"></i>
+                            Ajouter un commentaire
+                        </h3>
+                        <div class="comment-form-wrapper">
+                            {{ form_start(commentForm, {'attr': {'class': 'comment-form'}}) }}
+                                <div class="form-group">
+                                    {{ form_widget(commentForm.content, {
+                                        'attr': {
+                                            'class': 'form-control',
+                                            'placeholder': 'Votre commentaire...',
+                                            'rows': 4
+                                        }
+                                    }) }}
+                                    {{ form_errors(commentForm.content) }}
+                                </div>
+                                <button type="submit" class="btn btn-submit">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Publier
+                                </button>
+                            {{ form_end(commentForm) }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="login-prompt">
+                        <div class="login-icon">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                        <h3>Connectez-vous pour commenter</h3>
+                        <p>Partagez votre opinion en vous connectant à votre compte</p>
+                        <a href="{{ path('app_login') }}" class="btn btn-login">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Se connecter
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Related Articles -->
+        <div class="back-to-list">
+            <a href="{{ path('app_article_index') }}" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour à la liste</span>
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .container {
+            max-width: 900px;
+        }
+
+        /* Article Header */
+        .article-header {
+            margin-bottom: 40px;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-link:hover {
+            color: #4ecdc4;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb-current {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .category-meta {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white !important;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .reading-time {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 12px;
+        }
+
+        /* Article Content */
+        .article-content {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        .article-title-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .article-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-featured-image {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .article-featured-image img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .article-featured-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .image-gradient-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.4));
+            pointer-events: none;
+        }
+
+        .article-body {
+            margin-top: 30px;
+        }
+
+        .content-wrapper {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .content-wrapper p {
+            margin-bottom: 20px;
+        }
+
+        /* Social Share */
+        .social-share {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            text-align: center;
+        }
+
+        .share-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .share-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .share-btn:hover::before {
+            left: 100%;
+        }
+
+        .share-btn.twitter {
+            background: linear-gradient(45deg, #1da1f2, #1991db);
+            color: white;
+        }
+
+        .share-btn.facebook {
+            background: linear-gradient(45deg, #4267b2, #365899);
+            color: white;
+        }
+
+        .share-btn.linkedin {
+            background: linear-gradient(45deg, #0077b5, #005885);
+            color: white;
+        }
+
+        .share-btn.copy {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-bottom: 50px;
+        }
+
+        .comments-header {
+            margin-bottom: 30px;
+        }
+
+        .comments-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .comments-count {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* No Comments */
+        .no-comments {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .no-comments-icon {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .no-comments h3 {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .no-comments p {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Comments List */
+        .comments-list {
+            margin-bottom: 40px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 20px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+        }
+
+        .comment-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .comment-avatar {
+            flex-shrink: 0;
+        }
+
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .comment-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .comment-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .comment-actions {
+            margin-top: 15px;
+        }
+
+        .btn-delete-comment {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete-comment:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Add Comment Section */
+        .add-comment-section {
+            margin-bottom: 40px;
+        }
+
+        .comment-form-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .login-prompt h3 {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .login-prompt p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 25px;
+        }
+
+        .btn-login {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10p 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Back Button */
+        .back-to-list {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .article-content {
+                padding: 25px;
+            }
+
+            .article-title {
+                font-size: 2rem;
+            }
+
+            .article-featured-image img {
+                height: 250px;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .breadcrumb-nav {
+                flex-wrap: wrap;
+            }
+
+            .share-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .comment-item {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .social-share,
+            .comment-form-container,
+            .login-prompt {
+                padding: 20px;
+            }
+
+            .article-title {
+                font-size: 1.8rem;
+            }
+
+            .comments-title {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+
+    <script>
+        // Social sharing functions
+        function shareOnTwitter(title, url) {
+            const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+            window.open(shareUrl, '_blank', 'width=550,height=420');
+        }
+
+        function shareOnFacebook(url) {
+            const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            window.open(shareUrl, '_blank', 'width=550,height=420');
+        }
+        function shareOnLinkedIn(title, url) {
+            const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+            window.open(shareUrl, '_blank', 'width=550,height=420');
+        }
+
+        function copyToClipboard(url) {
+            navigator.clipboard.writeText(url).then(function() {
+                // Création d'une notification temporaire
+                const notification = document.createElement('div');
+                notification.innerHTML = '<i class="fas fa-check"></i> Lien copié !';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Animation d'entrée
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Animation de sortie et suppression
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+                
+            }).catch(function(err) {
+                console.error('Erreur lors de la copie : ', err);
+                
+                // Fallback pour les navigateurs plus anciens
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    alert('Lien copié dans le presse-papiers !');
+                } catch (err) {
+                    alert('Impossible de copier le lien automatiquement. Veuillez le copier manuellement : ' + url);
+                }
+                
+                document.body.removeChild(textArea);
+            });
+        }
+
+        // Animation au scroll pour les commentaires
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observer tous les commentaires
+            document.querySelectorAll('.comment-item').forEach((comment, index) => {
+                comment.style.opacity = '0';
+                comment.style.transform = 'translateY(30px)';
+                comment.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                observer.observe(comment);
+            });
+        }
+
+        // Smooth scroll pour les liens d'ancrage
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Gestion des formulaires de suppression de commentaires
+        function initDeleteCommentForms() {
+            document.querySelectorAll('.delete-comment-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const confirmDelete = confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');
+                    if (!confirmDelete) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        }
+
+        // Effet de lecture progressive
+        function initReadingProgress() {
+            const article = document.querySelector('.article-content');
+            if (!article) return;
+
+            const progressBar = document.createElement('div');
+            progressBar.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 0%;
+                height: 3px;
+                background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+                z-index: 1000;
+                transition: width 0.3s ease;
+            `;
+            document.body.appendChild(progressBar);
+
+            window.addEventListener('scroll', () => {
+                const articleTop = article.offsetTop;
+                const articleHeight = article.offsetHeight;
+                const windowHeight = window.innerHeight;
+                const scrollTop = window.pageYOffset;
+
+                const start = articleTop - windowHeight;
+                const end = articleTop + articleHeight;
+                const progress = Math.max(0, Math.min(100, (scrollTop - start) / (end - start) * 100));
+
+                progressBar.style.width = progress + '%';
+            });
+        }
+
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            initScrollAnimations();
+            initSmoothScroll();
+            initDeleteCommentForms();
+            initReadingProgress();
+        });
+
+        // Gestion du redimensionnement de la fenêtre
+        window.addEventListener('resize', function() {
+            // Recalcul des animations si nécessaire
+            initScrollAnimations();
+        });
+    </script>
+{% endblock %}

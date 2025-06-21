@@ -1,0 +1,397 @@
+{{ form_start(form, {'attr': {'class': 'article-form'}}) }}
+<div class="form-grid">
+    <div class="form-section">
+        <div class="form-group">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.title, {'attr': {
+                'class': 'form-control',
+                'placeholder': 'Titre de l\'article...'
+            }}) }}
+            {{ form_errors(form.title) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.content, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.content, {'attr': {
+                'class': 'form-control',
+                'rows': 10,
+                'placeholder': 'Contenu de l\'article...'
+            }}) }}
+            {{ form_errors(form.content) }}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-group">
+            {{ form_label(form.category, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.category) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.image, null, {'label_attr': {'class': 'form-label'}}) }}
+            <div class="file-upload">
+                {{ form_widget(form.image, {'attr': {'class': 'file-input'}}) }}
+                <label for="{{ form.image.vars.id }}" class="file-label">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span class="file-text">Choisir une image</span>
+                    <span class="file-name" id="fileName">Aucun fichier sélectionné</span>
+                </label>
+                {{ form_errors(form.image) }}
+            </div>
+            {% if form.vars.value.image %}
+                <div class="current-image">
+                    <p>Image actuelle :</p>
+                    <img src="{{ asset('uploads/' ~ form.vars.value.image) }}" alt="Current image" class="img-thumbnail">
+                </div>
+            {% endif %}
+        </div>
+
+
+        <div class="form-group">
+            {{ form_label(form.isPublished, null, {'label_attr': {'class': 'form-label'}}) }}
+            <div class="toggle-switch">
+                {{ form_widget(form.isPublished) }}
+                <label for="{{ form.isPublished.vars.id }}" class="toggle-label">
+                    <span class="toggle-handle"></span>
+                </label>
+                <span class="toggle-text">{{ form.isPublished.vars.label }}</span>
+            </div>
+            {{ form_errors(form.isPublished) }}
+        </div>
+    </div>
+</div>
+
+<div class="form-actions">
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i>
+        {{ button_label|default('Enregistrer') }}
+    </button>
+    
+    <a href="{{ path('app_article_index') }}" class="btn btn-secondary">
+        <i class="fas fa-times"></i>
+        Annuler
+    </a>
+</div>
+{{ form_end(form) }}
+
+<style>
+/* Form Container */
+.article-form {
+    margin-top: 30px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+textarea.form-control {
+    min-height: 300px;
+    resize: vertical;
+}
+
+/* File Upload */
+.file-upload {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.file-input {
+    position: absolute;
+    left: -9999px;
+}
+
+.file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.file-label:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.file-label i {
+    font-size: 2.5rem;
+    color: #667eea;
+    margin-bottom: 10px;
+}
+
+.file-text {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.file-name {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.current-image {
+    margin-top: 15px;
+}
+
+.current-image p {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.img-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Tags Input */
+.tags-input {
+    padding: 10px 15px;
+}
+
+.tags-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.toggle-label {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 34px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.toggle-label .toggle-handle {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle-switch input:checked + .toggle-label {
+    background: #4ecdc4;
+}
+
+.toggle-switch input:checked + .toggle-label .toggle-handle {
+    transform: translateX(26px);
+}
+
+.toggle-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 12px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Form Errors */
+.form-error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
+.form-control.is-invalid {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File input display
+    const fileInput = document.querySelector('.file-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'Aucun fichier sélectionné';
+            document.getElementById('fileName').textContent = fileName;
+        });
+    }
+
+    // Auto-resize textarea
+    const textarea = document.querySelector('textarea.form-control');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        // Trigger initial resize
+        setTimeout(() => {
+            textarea.dispatchEvent(new Event('input'));
+        }, 100);
+    }
+
+    // Form validation
+    const form = document.querySelector('.article-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                    
+                    // Scroll to first error
+                    if (isValid === false) {
+                        field.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        field.focus();
+                    }
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Tags input formatting
+    const tagsInput = document.querySelector('.tags-input');
+    if (tagsInput) {
+        tagsInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>

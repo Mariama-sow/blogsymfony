@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Catégorie - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div style="text-align: center; margin: 40px 0;">
+        <h1 style="font-size: 3rem; background: linear-gradient(45deg, #56ab2f, #a8e6cf, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; animation: glow 2s ease-in-out infinite alternate;">
+            <i class="fas fa-plus-circle"></i> Créer une Catégorie
+        </h1>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.2rem;">Ajoutez une nouvelle catégorie pour organiser vos articles</p>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+            <div style="width: 50px; height: 50px; background: linear-gradient(45deg, #56ab2f, #a8e6cf); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-tag" style="color: white; font-size: 1.2rem;"></i>
+            </div>
+            <div>
+                <h2 style="margin: 0; color: #ffffff;">Nouvelle Catégorie</h2>
+                <p style="margin: 5px 0 0 0; color: rgba(255, 255, 255, 0.7);">Remplissez les informations ci-dessous</p>
+            </div>
+        </div>
+
+        {{ include('category/_form.html.twig', {'button_label': 'Créer la catégorie'}) }}
+
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <a href="{{ path('app_category_index') }}" 
+               style="display: inline-flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.8); text-decoration: none; transition: all 0.3s ease;">
+                <i class="fas fa-arrow-left"></i>
+                Retour à la liste des catégories
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes glow {
+        from { filter: brightness(1) drop-shadow(0 0 10px rgba(86, 171, 47, 0.3)); }
+        to { filter: brightness(1.2) drop-shadow(0 0 20px rgba(86, 171, 47, 0.6)); }
+    }
+
+    a[href*="app_category_index"]:hover {
+        color: #4ecdc4 !important;
+        transform: translateX(-5px);
+    }
+
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2rem !important;
+        }
+    }
+</style>
+{% endblock %}

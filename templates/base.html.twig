@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Mon Blog Personnel{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📝</text></svg>">
+        
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        
+        {% block stylesheets %}
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+                color: #ffffff;
+                min-height: 100vh;
+                position: relative;
+                overflow-x: hidden;
+                line-height: 1.6;
+            }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: 
+                    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.05) 0%, transparent 50%);
+                z-index: -1;
+                animation: shimmer 15s ease-in-out infinite alternate;
+            }
+
+            @keyframes shimmer {
+                0% { opacity: 0.8; }
+                100% { opacity: 1; }
+            }
+
+            /* Navigation Styles */
+            nav {
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(15px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .nav-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                min-height: 70px;
+            }
+
+            .nav-brand {
+                font-size: 1.5rem;
+                font-weight: bold;
+                background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .nav-links {
+                display: flex;
+                list-style: none;
+                gap: 30px;
+                align-items: center;
+            }
+
+            .nav-links a {
+                color: rgba(255, 255, 255, 0.9);
+                text-decoration: none;
+                padding: 10px 20px;
+                border-radius: 25px;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .nav-links a::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+                transition: left 0.5s;
+            }
+
+            .nav-links a:hover::before {
+                left: 100%;
+            }
+
+            .nav-links a:hover {
+                background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+                color: #ffffff;
+            }
+
+            /* Mobile Navigation */
+            .nav-toggle {
+                display: none;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 10px;
+            }
+
+            /* Container */
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            /* Cards */
+            .card {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 20px;
+                padding: 30px;
+                margin-bottom: 30px;
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .card:hover::before {
+                opacity: 1;
+            }
+
+            /* Buttons */
+            .btn {
+                padding: 12px 24px;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 0.9rem;
+                background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                transition: all 0.3s ease;
+            }
+
+            .btn:hover::before {
+                width: 300%;
+                height: 300%;
+            }
+
+            .btn:hover {
+                box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+                transform: translateY(-2px);
+            }
+
+            /* Tables */
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+
+            .table th,
+            .table td {
+                padding: 15px;
+                text-align: left;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .table th {
+                background: linear-gradient(45deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+                color: #ffffff;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 0.9rem;
+            }
+
+            .table tr {
+                transition: all 0.3s ease;
+            }
+
+            .table tr:hover {
+                background: rgba(255, 255, 255, 0.05);
+                transform: scale(1.01);
+            }
+
+            /* Forms */
+            .form-group {
+                margin-bottom: 25px;
+            }
+
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #ffffff;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 0.9rem;
+            }
+
+            .form-control {
+                width: 100%;
+                padding: 15px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                color: #ffffff;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            }
+
+            .form-control:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .form-control::placeholder {
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            /* Floating particles */
+            .floating-particles {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: -1;
+            }
+
+            .particle {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 50%;
+                animation: float 15s infinite linear;
+            }
+
+            @keyframes float {
+                0% {
+                    transform: translateY(100vh) rotate(0deg);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .nav-links {
+                    display: none;
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: rgba(0, 0, 0, 0.95);
+                    backdrop-filter: blur(20px);
+                    flex-direction: column;
+                    padding: 20px;
+                    gap: 10px;
+                }
+
+                .nav-links.active {
+                    display: flex;
+                }
+
+                .nav-toggle {
+                    display: block;
+                }
+
+                .container {
+                    padding: 10px;
+                }
+
+                .card {
+                    padding: 20px;
+                }
+            }
+        </style>
+        {% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+            <script>
+                // Mobile navigation toggle
+                document.addEventListener('DOMContentLoaded', function() {
+                    const navToggle = document.querySelector('.nav-toggle');
+                    const navLinks = document.querySelector('.nav-links');
+                    
+                    if (navToggle) {
+                        navToggle.addEventListener('click', function() {
+                            navLinks.classList.toggle('active');
+                        });
+                    }
+
+                    // Create floating particles
+                    function createParticle() {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle';
+                        particle.style.left = Math.random() * 100 + '%';
+                        particle.style.animationDelay = Math.random() * -20 + 's';
+                        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                        
+                        const container = document.querySelector('.floating-particles');
+                        if (container) {
+                            container.appendChild(particle);
+                            
+                            setTimeout(() => {
+                                if (particle.parentNode) {
+                                    particle.remove();
+                                }
+                            }, 20000);
+                        }
+                    }
+
+                    // Create initial particles
+                    const particleContainer = document.createElement('div');
+                    particleContainer.className = 'floating-particles';
+                    document.body.appendChild(particleContainer);
+
+                    for (let i = 0; i < 10; i++) {
+                        setTimeout(createParticle, i * 1000);
+                    }
+
+                    // Create new particles periodically
+                    setInterval(createParticle, 3000);
+                });
+            </script>
+        {% endblock %}
+    </head>
+    <body>
+        <nav>
+           <div class="nav-links">
+                <a href="{{ path('home') }}">
+                    <i class="fas fa-home"></i>
+                    Accueil
+                </a>
+
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <a href="{{ path('app_article_index') }}">
+                        <i class="fas fa-newspaper"></i>
+                        Articles
+                    </a>
+                    <a href="{{ path('app_category_index') }}">
+                        <i class="fas fa-tags"></i>
+                        Catégories
+                    </a>
+                    <a href="{{ path('app_logout') }}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Déconnexion
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_login') }}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Connexion
+                    </a>
+                    <a href="{{ path('app_register') }}">
+                        <i class="fas fa-user-plus"></i>
+                        Inscription
+                    </a>
+                {% endif %}
+            </div>
+
+        </nav>
+
+        <main>
+            {% block body %}{% endblock %}
+        </main>
+    </body>
+</html>

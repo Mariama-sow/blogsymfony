@@ -1,0 +1,315 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ category.name }} - Détails de la catégorie{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-tag"></i>
+                {{ category.name }}
+            </h1>
+            <div class="header-actions">
+                <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Modifier
+                </a>
+                <a href="{{ path('app_category_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour
+                </a>
+            </div>
+        </div>
+        <div class="breadcrumb">
+            <a href="{{ path('app_category_index') }}" class="breadcrumb-link">
+                <i class="fas fa-tags"></i>
+                Catégories
+            </a>
+            <span class="breadcrumb-separator">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+            <span class="breadcrumb-current">{{ category.name }}</span>
+        </div>
+    </div>
+
+    <div class="show-container">
+        <div class="main-content">
+            <div class="card category-details">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-info-circle"></i>
+                        Informations de la catégorie
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label class="detail-label">
+                                <i class="fas fa-hashtag"></i>
+                                ID
+                            </label>
+                            <div class="detail-value">
+                                <span class="badge badge-info">#{{ category.id }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <label class="detail-label">
+                                <i class="fas fa-tag"></i>
+                                Nom
+                            </label>
+                            <div class="detail-value category-name">
+                                {{ category.name }}
+                            </div>
+                        </div>
+
+                        <div class="detail-item full-width">
+                            <label class="detail-label">
+                                <i class="fas fa-align-left"></i>
+                                Description
+                            </label>
+                            <div class="detail-value description">
+                                {% if category.description %}
+                                    {{ category.description|nl2br }}
+                                {% else %}
+                                    <span class="no-description">Aucune description fournie</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques de la catégorie -->
+            <div class="card stats-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-chart-bar"></i>
+                        Statistiques
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">0</div>
+                                <div class="stat-label">Articles</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ category.createdAt ? category.createdAt|date('d/m/Y') : 'N/A' }}</div>
+                                <div class="stat-label">Date de création</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-cogs"></i>
+                        Actions rapides
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="action-buttons">
+                        <a href="{{ path('app_category_edit', {'id': category.id}) }}" class="btn btn-success">
+                            <i class="fas fa-edit"></i>
+                            Modifier
+                        </a>
+                        
+                        <a href="{{ path('app_category_index') }}" class="btn btn-info">
+                            <i class="fas fa-list"></i>
+                            Toutes les catégories
+                        </a>
+                        
+                        <a href="#" class="btn btn-warning" onclick="window.print()">
+                            <i class="fas fa-print"></i>
+                            Imprimer
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone de danger -->
+            <div class="card danger-zone">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Zone de danger
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="danger-text">
+                        Supprimer cette catégorie est irréversible. Assurez-vous qu'aucun article n'y est associé.
+                    </p>
+                    {{ include('category/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .show-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+
+    .detail-item {
+        padding: 15px 0;
+    }
+
+    .detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .detail-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .detail-value {
+        font-size: 1.1rem;
+        color: #ffffff;
+        line-height: 1.5;
+    }
+
+    .category-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .description {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #4ecdc4;
+    }
+
+    .no-description {
+        color: rgba(255, 255, 255, 0.5);
+        font-style: italic;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .badge-info {
+        background: linear-gradient(45deg, #45b7d1, #96ceb4);
+        color: white;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #4ecdc4;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-success {
+        background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+    }
+
+    .btn-warning {
+        background: linear-gradient(45deg, #feca57, #ff9ff3);
+    }
+
+    @media (max-width: 768px) {
+        .show-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}

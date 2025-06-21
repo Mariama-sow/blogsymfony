@@ -1,0 +1,188 @@
+<div class="delete-form-container">
+    <form method="post" action="{{ path('app_category_delete', {'id': category.id}) }}" class="delete-form" id="deleteForm">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+        <button type="button" class="btn btn-danger delete-btn" onclick="confirmDelete()">
+            <i class="fas fa-trash-alt"></i>
+            Supprimer
+        </button>
+    </form>
+</div>
+
+<style>
+    .delete-form-container {
+        margin-top: 15px;
+    }
+
+    .btn-danger {
+        background: linear-gradient(45deg, #dc3545, #ff6b6b);
+        border: none;
+        width: 100%;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(45deg, #c82333, #ff5252);
+        box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
+    }
+
+    /* Modal pour confirmation de suppression */
+    .delete-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .delete-modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        animation: slideIn 0.3s ease;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .modal-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #dc3545, #ff6b6b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .modal-body {
+        margin-bottom: 30px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { 
+            opacity: 0;
+            transform: translateY(-20px) scale(0.9);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+</style>
+
+<script>
+function confirmDelete() {
+    // Créer la modal de confirmation
+    const modal = document.createElement('div');
+    modal.className = 'delete-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="modal-title">Confirmer la suppression</h3>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette catégorie ?</p>
+                <p><strong>Cette action est irréversible.</strong></p>
+                <p>Tous les articles associés à cette catégorie devront être recatégorisés.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+                <button type="button" class="btn btn-danger" onclick="executeDelete()">
+                    <i class="fas fa-trash-alt"></i>
+                    Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    // Fermer avec Échap
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+    
+    // Fermer en cliquant à l'extérieur
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeDeleteModal();
+        }
+    });
+}
+
+function closeDeleteModal() {
+    const modal = document.querySelector('.delete-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+function executeDelete() {
+    const form = document.getElementById('deleteForm');
+    if (form) {
+        // Animation de chargement
+        const deleteBtn = document.querySelector('.delete-modal .btn-danger');
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+        deleteBtn.disabled = true;
+        
+        // Soumettre le formulaire
+        setTimeout(() => form.submit(), 500);
+    }
+}
+</script>

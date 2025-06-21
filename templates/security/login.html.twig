@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 500px;">
+    <div class="card" style="padding: 2rem;">
+        <h1 class="h4 mb-3 text-center">Connexion</h1>
+        
+        <form method="post">
+            {% if error %}
+                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <div class="form-group mb-3">
+                <label for="inputEmail" class="form-label">Email</label>
+                <input type="email" value="{{ last_username }}" name="email" id="inputEmail" 
+                       class="form-control form-control-sm" autocomplete="email" required autofocus>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="inputPassword" class="form-label">Mot de passe</label>
+                <input type="password" name="password" id="inputPassword" 
+                       class="form-control form-control-sm" autocomplete="current-password" required>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <input type="checkbox" id="remember_me" name="_remember_me">
+                    <label for="remember_me" class="ms-2">Se souvenir</label>
+                </div>
+                <a href="#" class="small">Mot de passe oublié ?</a>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn btn-primary w-100" type="submit">
+                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
